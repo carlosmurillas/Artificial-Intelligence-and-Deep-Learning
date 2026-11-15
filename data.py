@@ -85,11 +85,35 @@ def load_fashion_mnist(root="data", batch_size=64):
     return train_data, test_data, train_loader, test_loader
 
 
+def load_mnist(root="data", batch_size=128, test_batch_size=256):
+    """MNIST dataset of handwritten digits (10 classes, 0..9).
+
+    Same recipe as FashionMNIST: download, convert to tensors, serve in batches.
+    Each image is a tensor (1, 28, 28) with values in [0, 1]
+    (flattened = 28 * 28 = 784 numbers).
+
+    Returns: train_data, test_data, train_loader, test_loader
+    """
+    from torch.utils.data import DataLoader
+    from torchvision import datasets
+    from torchvision.transforms import ToTensor
+
+    train_data = datasets.MNIST(root=root, train=True,  download=True, transform=ToTensor())
+    test_data  = datasets.MNIST(root=root, train=False, download=True, transform=ToTensor())
+
+    train_loader = DataLoader(train_data, batch_size=batch_size,      shuffle=True)
+    test_loader  = DataLoader(test_data,  batch_size=test_batch_size, shuffle=False)
+    return train_data, test_data, train_loader, test_loader
+
+
 # Lets you do `from data import train_loader, test_loader` (and train_data,
 # test_data). FashionMNIST is only loaded the first time one of these names is
 # requested, so scripts that don't use it don't need torch/torchvision.
+# Same for MNIST: `from data import mnist_train_loader, mnist_test_loader`, etc.
 _FASHION_NAMES = ("train_data", "test_data", "train_loader", "test_loader")
 _fashion_cache = None
+_MNIST_NAMES = ("mnist_train_data", "mnist_test_data", "mnist_train_loader", "mnist_test_loader")
+_mnist_cache = None
 
 # Declarations only (no value) so the editor/Pylance knows these names exist.
 from typing import TYPE_CHECKING
@@ -99,14 +123,22 @@ train_data: "Dataset"
 test_data: "Dataset"
 train_loader: "DataLoader"
 test_loader: "DataLoader"
+mnist_train_data: "Dataset"
+mnist_test_data: "Dataset"
+mnist_train_loader: "DataLoader"
+mnist_test_loader: "DataLoader"
 
 
 def __getattr__(name):
-    global _fashion_cache
+    global _fashion_cache, _mnist_cache
     if name in _FASHION_NAMES:
         if _fashion_cache is None:
             _fashion_cache = dict(zip(_FASHION_NAMES, load_fashion_mnist()))
         return _fashion_cache[name]
+    if name in _MNIST_NAMES:
+        if _mnist_cache is None:
+            _mnist_cache = dict(zip(_MNIST_NAMES, load_mnist()))
+        return _mnist_cache[name]
     raise AttributeError(f"module 'data' has no attribute {name!r}")
 
 
@@ -131,3 +163,10 @@ if __name__ == "__main__":
     print("X_val  :", tuple(X_val.shape),   "| y_val  :", tuple(y_val.shape))
     print("\nNote: age and income are already in [0,1] and voted2019 is 0/1,")
     print("so our features are effectively normalised already (a good-practice box ticked).")
+
+    # MNIST
+    mnist_train, mnist_test, _, _ = load_mnist()
+    print("\nMNIST training images:", len(mnist_train), "| test images:", len(mnist_test))
+    img, label = mnist_train[0]
+    print("one image tensor shape:", tuple(img.shape), "-> flattened to", 28 * 28, "numbers")
+    print("pixel value range:", float(img.min()), "to", float(img.max()))
