@@ -16,6 +16,7 @@ else:
 
 
 ## ----------------------------  RNNCell ------------------------------------------------
+
 class RNNCell(nn.Module):
     """One vanilla-RNN step on a batch of vectors."""
     def __init__(self, n_in, n_hidden):
