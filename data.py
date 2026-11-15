@@ -55,6 +55,61 @@ def train_val_split(X, y, train_frac=0.8, seed=1337):
     return X_train, y_train, X_val, y_val
 
 
+FASHION_CLASS_NAMES = ['T-shirt/top', 'Trouser', 'Pullover', 'Dress', 'Coat',
+                       'Sandal', 'Shirt', 'Sneaker', 'Bag', 'Ankle boot']
+
+
+def load_fashion_mnist(root="data", batch_size=64):
+    """FashionMNIST dataset for image recognition (10 classes of clothing).
+
+    Downloads the data the first time (cached in `root` afterwards) and
+    converts each image to a tensor of shape (1, 28, 28) with values in [0, 1].
+
+    torch/torchvision are imported inside the function so that scripts
+    without PyTorch can still import data.py.
+
+    Returns: train_data, test_data, train_loader, test_loader
+      - each loader batch: images (B, 1, 28, 28), labels (B,)
+      - labels 0..9 map to FASHION_CLASS_NAMES
+    """
+    from torch.utils.data import DataLoader
+    from torchvision import datasets
+    from torchvision.transforms import ToTensor
+
+    train_data = datasets.FashionMNIST(root=root, train=True,  download=True, transform=ToTensor())
+    test_data  = datasets.FashionMNIST(root=root, train=False, download=True, transform=ToTensor())
+
+    # shuffle=True reshuffles the training set every epoch.
+    train_loader = DataLoader(train_data, batch_size=batch_size, shuffle=True)
+    test_loader  = DataLoader(test_data,  batch_size=batch_size, shuffle=False)
+    return train_data, test_data, train_loader, test_loader
+
+
+# Lets you do `from data import train_loader, test_loader` (and train_data,
+# test_data). FashionMNIST is only loaded the first time one of these names is
+# requested, so scripts that don't use it don't need torch/torchvision.
+_FASHION_NAMES = ("train_data", "test_data", "train_loader", "test_loader")
+_fashion_cache = None
+
+# Declarations only (no value) so the editor/Pylance knows these names exist.
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from torch.utils.data import Dataset, DataLoader
+train_data: "Dataset"
+test_data: "Dataset"
+train_loader: "DataLoader"
+test_loader: "DataLoader"
+
+
+def __getattr__(name):
+    global _fashion_cache
+    if name in _FASHION_NAMES:
+        if _fashion_cache is None:
+            _fashion_cache = dict(zip(_FASHION_NAMES, load_fashion_mnist()))
+        return _fashion_cache[name]
+    raise AttributeError(f"module 'data' has no attribute {name!r}")
+
+
 X, y = make_turnout_data(n=2000, seed=0)
 
 
