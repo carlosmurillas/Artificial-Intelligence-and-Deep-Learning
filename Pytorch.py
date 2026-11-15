@@ -39,17 +39,7 @@ print("so our features are effectively normalised already (a good-practice box t
 ## ---------------------------- nn.Module ------------------------------------------------
 
 # (a) The nn.Module form. This matches the TurnoutModel from Lecture 5.
-class TurnoutNet(nn.Module):
-    def __init__(self, in_features=3, hidden=16):
-        super().__init__()
-        self.fc1 = nn.Linear(in_features, hidden)   # 3 -> 16
-        self.fc2 = nn.Linear(hidden, 1)             # 16 -> 1
-
-    def forward(self, x):
-        h = torch.relu(self.fc1(x))   # hidden layer + ReLU activation
-        # TODO: return the output layer (fc2) applied to h. One line.
-        #       NOTE: we do NOT apply a sigmoid here -- the loss will (see Section 3).
-        return self.fc2(h)
+from feed_forward_net import TurnoutNet   # defined in feed_forward_net.py
 
 
 torch.manual_seed(1337)
