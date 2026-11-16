@@ -3,6 +3,8 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 
+# Datos de votantes (age01, income01, voted2019) -> turned out 0/1
+from data import Xtr, ytr
 
 
 class Value:
@@ -120,9 +122,6 @@ def backward(self):
 ##-------------------- Training loop ----------------------------------------------------------------
 
 random.seed(1337)
-
-# Datos de votantes (age01, income01, voted2019) -> turned out 0/1
-from data import Xtr, ytr
 
 model = MLP(3, [8, 1])
 lr = 1.0
